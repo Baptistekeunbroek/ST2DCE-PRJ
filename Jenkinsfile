@@ -6,28 +6,16 @@ pipeline {
     }
 
     stages {
-        stage('Build') {
-            steps {
-                // Use 'dir' to navigate to the project directory before running Maven commands
-                dir('.') {
-                    sh 'mvn clean package'
-                    sh 'ls -l target/'
-
-                }
-            }
-        }
-
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Set a default value for VARIABLE if it's not defined
-                    def variable = env.VARIABLE ?: 'default_value'
-                    // Build the Docker image with the specified tag and build argument
-                    docker.build("bkdockerefrei/st2dce:${env.BUILD_ID}").withBuildArg("VARIABLE=${variable}")
-                }
-            }
+            // Set a default value for VARIABLE if it's not defined
+            def variable = env.VARIABLE ?: 'default_value'
+            // Build the Docker image with the specified tag
+            docker.build("bkdockerefrei/st2dce:${env.BUILD_ID}")
         }
-
+    }
+}
         stage('Push Docker Image') {
             steps {
                 script {
