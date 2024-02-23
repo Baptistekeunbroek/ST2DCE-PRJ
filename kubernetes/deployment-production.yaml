@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: st2dce-production
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: st2dce
+      env: production
+  template:
+    metadata:
+      labels:
+        app: st2dce
+        env: production
+    spec:
+      containers:
+        - name: st2dce
+          image: bkdockerefrei/st2dce:latest
+          ports:
+            - containerPort: 8080

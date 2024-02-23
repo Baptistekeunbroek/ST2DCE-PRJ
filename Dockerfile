@@ -1,4 +1,4 @@
-ARG VARIABLE=
+ARG VARIABLE=default_value
 
 # Use an official Maven image as a build stage
 FROM maven:3.8.4-openjdk-17 AS build
