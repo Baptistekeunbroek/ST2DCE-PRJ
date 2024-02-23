@@ -11,6 +11,8 @@ pipeline {
                 // Use 'dir' to navigate to the project directory before running Maven commands
                 dir('.') {
                     sh 'mvn clean package'
+                    sh 'ls -l target/'
+
                 }
             }
         }
