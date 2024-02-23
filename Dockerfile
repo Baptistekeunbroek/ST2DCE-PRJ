@@ -16,7 +16,7 @@ RUN mvn dependency:go-offline
 COPY src src
 
 # Build the application
-RUN mvn package
+RUN mvn package -Dvariable=$VARIABLE
 
 
 # Use a lightweight Java image for the runtime
