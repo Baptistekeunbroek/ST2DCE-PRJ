@@ -1,21 +1,36 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: st2dce-production
+  name: myapp-production
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: st2dce
-      env: production
+      app: myapp
+      environment: production
   template:
     metadata:
       labels:
-        app: st2dce
-        env: production
+        app: myapp
+        environment: production
     spec:
       containers:
-        - name: st2dce
-          image: bkdockerefrei/st2dce:latest
-          ports:
-            - containerPort: 8080
+      - name: myapp
+        image: hbjprojectdevops/st2dce:latest
+        ports:
+        - containerPort: 8080
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: myapp-production
+spec:
+  selector:
+    app: myapp
+    environment: production
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+
