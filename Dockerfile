@@ -28,7 +28,7 @@ ARG VARIABLE
 WORKDIR /app
 
 # Copy the JAR file from the build stage
-COPY --from=build /app/target/st2dce-0.0.1-SNAPSHOT.jar app.jar
+COPY --from=build /app/target/st2dce-$VARIABLE.jar app.jar
 
 
 # Expose the port
