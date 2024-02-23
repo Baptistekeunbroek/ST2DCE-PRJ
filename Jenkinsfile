@@ -21,7 +21,7 @@ pipeline {
                     // Set a default value for VARIABLE if it's not defined
                     def variable = env.VARIABLE ?: 'default_value'
                     // Build the Docker image with the specified tag and build argument
-                    docker.build("bkdockerefrei/ST2DCE-PRJ:${env.BUILD_ID}").withBuildArg("VARIABLE=${variable}")
+                    docker.build("bkdockerefrei/st2dce:${env.BUILD_ID}").withBuildArg("VARIABLE=${variable}")
                 }
             }
         }
@@ -31,7 +31,7 @@ pipeline {
                 script {
                     // Push the built Docker image to the Docker registry
                     docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDENTIALS_ID) {
-                        docker.image("bkdockerefrei/ST2DCE-PRJ:${env.BUILD_ID}").push()
+                        docker.image("bkdockerefrei/st2dce:${env.BUILD_ID}").push()
                     }
                 }
             }
