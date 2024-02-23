@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
         - name: st2dce
-          image: bkdockerefrei/st2dce:latest
+          image: hbjprojectdevops/st2dce:latest
           ports:
             - containerPort: 8080
