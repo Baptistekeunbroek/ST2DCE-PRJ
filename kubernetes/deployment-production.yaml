@@ -1,7 +1,15 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: production
+
+---
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: myapp-production
+  namespace: production
 spec:
   replicas: 3
   selector:
@@ -21,10 +29,12 @@ spec:
         - containerPort: 8080
 
 ---
+
 apiVersion: v1
 kind: Service
 metadata:
   name: myapp-production
+  namespace: production
 spec:
   selector:
     app: myapp
@@ -33,4 +43,3 @@ spec:
     - protocol: TCP
       port: 80
       targetPort: 8080
-
