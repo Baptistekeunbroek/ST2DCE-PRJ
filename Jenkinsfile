@@ -1,43 +1,86 @@
+def dockerImage = ''
 pipeline {
-    agent any
 
-    environment {
-        DOCKER_CREDENTIALS_ID = 'docker-hub-credential'
-    }
+    agent {
+        label 'jenkins-slave'
+      }
 
     stages {
-        stage('Build Docker Image') {
+        stage('Cloning Git') {
             steps {
-                script {
-            // Set a default value for VARIABLE if it's not defined
-            def variable = env.VARIABLE ?: 'default_value'
-            // Build the Docker image with the specified tag
-            docker.build("bkdockerefrei/st2dce:${env.BUILD_ID}")
+                git branch: 'main', url: 'https://github.com/Baptistekeunbroek/ST2DCE-PRJ.git'
+            }
         }
-    }
-}
-        stage('Push Docker Image') {
+        
+        stage('Get environment variables') {
             steps {
                 script {
-                    // Push the built Docker image to the Docker registry
-                    docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDENTIALS_ID) {
-                        docker.image("bkdockerefrei/st2dce:${env.BUILD_ID}").push()
+                    pom = readMavenPom file: 'pom.xml'
+                    echo "Project ArtifactID: ${pom.getArtifactId()}"
+                    env.ARTIFACT_ID = pom.getArtifactId()
+                    echo "Project Version: ${env.BUILD_ID}"
+                    pom.version = env.BUILD_ID
+                    writeMavenPom file: 'pom.xml', model: pom
+                }
+            }
+        }
+    
+        stage('Building docker image') {
+          steps {
+            script {
+                dockerImage = docker.build("hbjprojectdevops/${env.ARTIFACT_ID}:${env.BUILD_ID}", "--build-arg=\"VARIABLE=${env.BUILD_ID}\" .")
+            }
+          }
+        }
+        
+        stage('Publish docker Image') {
+          steps {
+            script {
+              withDockerRegistry(credentialsId: 'DockerHubHBJ') {
+                dockerImage.push()
+              }
+            }
+          }
+        }
+    
+        stage('Update Deployment YAML') {
+            steps {
+                dir('kubernetes') {
+                    script {
+                        def yamlDevFile = readFile('deployment-development.yaml')
+                        def updatedDevYaml = yamlDevFile.replaceAll(/image: hbjprojectdevops\/st2dce:VERSION_PLACEHOLDER/, "image: hbjprojectdevops/st2dce:${BUILD_ID}")
+                        writeFile(file: 'deployment-development.yaml', text: updatedDevYaml)
+                        def yamlProdFile = readFile('deployment-production.yaml')
+                        def updatedProdYaml = yamlProdFile.replaceAll(/image: hbjprojectdevops\/st2dce:VERSION_PLACEHOLDER/, "image: hbjprojectdevops/st2dce:${BUILD_ID}")
+                        writeFile(file: 'deployment-production.yaml', text: updatedProdYaml)
                     }
                 }
             }
         }
-
-        stage('Deploy to Kubernetes (Development)') {
+        
+        stage('Deploy to Development') {
             steps {
-                // Apply Kubernetes deployment configuration for development environment
-                sh 'kubectl apply -f kubernetes/deployment-development.yaml'
+                dir('kubernetes') {
+                    bat "kubectl apply -f deployment-development.yaml"
+                }
             }
         }
-
-        stage('Deploy to Kubernetes (Production)') {
+        
+        stage('Test development') {
             steps {
-                // Apply Kubernetes deployment configuration for production environment
-                sh 'kubectl apply -f kubernetes/deployment-production.yaml'
+                script{
+                    // Execute kubectl port-forward in the background
+                    bat "start /B cmd /c kubectl port-forward -n development service/myapp-development 8081:80"
+                    bat "curl http://localhost:8081/"
+                }
+            }
+        }
+        
+        stage('Deploy to Production') {
+            steps {
+                dir('kubernetes') {
+                    bat "kubectl apply -f deployment-production.yaml"
+                }
             }
         }
     }
