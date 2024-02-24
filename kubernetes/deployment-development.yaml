@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: myapp
-        image: hbjprojectdevops/st2dce:latest
+        image: hbjprojectdevops/st2dce:${VERSION_PLACEHOLDER}
         ports:
         - containerPort: 8080
 
