@@ -1,0 +1,23 @@
+serverFiles:
+  alerting_rules.yml:
+    groups:
+      - name: development
+        rules:
+          - alert: DevelopmentReplicaCountLow
+            expr: kube_deployment_status_replicas_available{deployment="myapp-development", namespace="development"} < 2
+            for: 1m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Replica count is too low for myapp-development in development namespace"
+              description: "The number of replicas available for myapp-development in development namespace is less than 2."
+      - name: production
+        rules:
+        - alert: ProductionReplicaCountLow
+          expr: kube_deployment_status_replicas_available{deployment="myapp-production", namespace="production"} < 2
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Replica count is too low for myapp-production in production namespace"
+            description: "The number of replicas available for myapp-production in production namespace is less than 2."
